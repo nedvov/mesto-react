@@ -81,26 +81,15 @@ class Api {
         })
     }
 
-    async likeCard(cardId) {
+    async likeCard(cardId, isLiked) {
         return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
-            method: 'PUT',
+            method: (!isLiked ? 'PUT' : 'DELETE'),
             headers: {
-              authorization: this._headers.authorization,
-              'Content-Type': this._headers['Content-Type']
-            }        
-        })
-        .then(res => this.#isOK(res))
-    }
-
-    async dislikeCard(cardId) {
-        return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
-            method: 'DELETE',
-            headers: {
-              authorization: this._headers.authorization,
-              'Content-Type': this._headers['Content-Type']
-            }        
-        })
-        .then(res => this.#isOK(res))
+                authorization: this._headers.authorization,
+                'Content-Type': this._headers['Content-Type']
+                }        
+            })
+            .then(res => this.#isOK(res))       
     }
 
     async setUserAvatar(link) {

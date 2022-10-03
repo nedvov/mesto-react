@@ -1,7 +1,11 @@
 import React from 'react';
+import {CurrentUserContext} from './contexts/CurrentUserContext';
 
 function Card(props) {
-    const [imageErrorState, setImageErrorState] = React.useState(false);  
+    const currentUser = React.useContext(CurrentUserContext);
+    const [imageErrorState, setImageErrorState] = React.useState(false);
+    const isOwn = props.card.owner._id === currentUser._id;
+    const isLiked = props.card.likes.some(i => i._id === currentUser._id);
 
     function handleClick() {
         if (imageErrorState) {
@@ -10,6 +14,14 @@ function Card(props) {
             props.onCardClick(cardWithError)
         }
         else {props.onCardClick(props.card)}
+    }
+
+    function handleLikeClick() {
+        props.onCardLike(props.card)
+    }
+
+    function handleDeleteClick() {
+        props.onCardDelete(props.card)
     }
 
     return (        
@@ -28,11 +40,11 @@ function Card(props) {
             <div className="tiles__place">
                  <h2 className="tiles__title">{props.card.name}</h2>
                 <div className="tiles__likes">
-                    <button className="tiles__like" type="button"></button>
+                    <button className={isLiked ? 'tiles__like tiles__like_active' : 'tiles__like'} onClick={handleLikeClick} type="button"></button>
                     <p className="tiles__like-count">{props.card.likes.length}</p>
                 </div>  
             </div>
-             <button className="tiles__delete-button" type="button"></button>
+            {isOwn && <button className="tiles__delete-button" onClick={handleDeleteClick} type="button"></button>}
         </div>
     );
 }
