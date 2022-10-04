@@ -15,95 +15,69 @@ class Api {
             return data 
         })
     }
+
+    async _request(url, options) {
+        return fetch(url, options).then(this.#isOK)
+    }
   
-    async getInitialCards() {
-        return  fetch(`${this._baseUrl}/cards`, {
+    getInitialCards() {
+        return this._request(`${this._baseUrl}/cards`, {
             method: 'GET',
-            headers: {
-              authorization: this._headers.authorization
-            }            
+            headers: this._headers   
         })
-        .then(res => this.#isOK(res))
     }
 
-    async getUserInfo() {
-        return fetch(`${this._baseUrl}/users/me`, {
+    getUserInfo() {
+        return this._request(`${this._baseUrl}/users/me`, {
             method: 'GET',
-            headers: {
-              authorization: this._headers.authorization
-            }            
-        })
-        .then(res => this.#isOK(res))
+            headers: this._headers   
+        })       
     }
 
-    async addNewCard(name, link) {
-        return fetch(`${this._baseUrl}/cards`, {
+    addNewCard(name, link) {
+        return this._request(`${this._baseUrl}/cards`, {
             method: 'POST',
-            headers: {
-              authorization: this._headers.authorization,
-              'Content-Type': this._headers['Content-Type']
-            },
+            headers: this._headers,
             body: JSON.stringify({
                 'name': name,
                 'link': link
             })          
         })
-        .then(res => this.#isOK(res)) 
     }
 
-    async setUserInfo(name, job) {
-        return fetch(`${this._baseUrl}/users/me`, {
+    setUserInfo(name, job) {
+        return this._request(`${this._baseUrl}/users/me`, {
             method: 'PATCH',
-            headers: {
-              authorization: this._headers.authorization,
-              'Content-Type': this._headers['Content-Type']
-            },
+            headers: this._headers,
             body: JSON.stringify({
                 'name': name,
                 'about': job
             })          
         })
-        .then(res => this.#isOK(res))
     }
 
-    async deleteCard(cardId) {
-        return fetch(`${this._baseUrl}/cards/${cardId}`, {
+    deleteCard(cardId) {
+        return this._request(`${this._baseUrl}/cards/${cardId}`, {
             method: 'DELETE',
-            headers: {
-              authorization: this._headers.authorization
-            }       
-        })
-        .then(res => {
-            if (res.ok) {
-              return res;
-            }
-            return Promise.reject(`Ошибка: ${res.status}`);
+            headers: this._headers
         })
     }
 
-    async likeCard(cardId, isLiked) {
-        return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
+    likeCard(cardId, isLiked) {
+        return this._request(`${this._baseUrl}/cards/${cardId}/likes`, {
             method: (!isLiked ? 'PUT' : 'DELETE'),
-            headers: {
-                authorization: this._headers.authorization,
-                'Content-Type': this._headers['Content-Type']
-                }        
-            })
-            .then(res => this.#isOK(res))       
+            headers: this._headers    
+            }) 
     }
 
-    async setUserAvatar(link) {
-        return fetch(`${this._baseUrl}/users/me/avatar`, {
+    setUserAvatar(link) {
+        return this._request(`${this._baseUrl}/users/me/avatar`, {
             method: 'PATCH',
-            headers: {
-              authorization: this._headers.authorization,
-              'Content-Type': this._headers['Content-Type']
-            },
+            headers: this._headers,
             body: JSON.stringify({
                 'avatar': link
             })          
         })
-        .then(res => this.#isOK(res))
     }
 }
 

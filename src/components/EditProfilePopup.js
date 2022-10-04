@@ -1,6 +1,6 @@
 import PopupWithForm from './PopupWithForm';
 import React from 'react';
-import {CurrentUserContext} from './contexts/CurrentUserContext';
+import {CurrentUserContext} from '../contexts/CurrentUserContext';
 
 function EditProfilePopup(props) {
     const currentUser = React.useContext(CurrentUserContext);
@@ -28,23 +28,17 @@ function EditProfilePopup(props) {
         props.onUpdateUser(name, description);
     }
 
-    function handleClosePopup() {
-      props.onClose()
-      setName(currentUser.name);
-      setDescription(currentUser.about);
-      setNameValidity(true);
-      setDescriptionValidity(true);
-      setNameError('')
-      setDescriptionError('')
-    }
-
     React.useEffect(() => {
         setName(currentUser.name);
         setDescription(currentUser.about);
-      }, [currentUser]);
+        setNameValidity(true);
+        setDescriptionValidity(true);
+        setNameError('');
+        setDescriptionError('');
+      }, [currentUser, props.isOpen]);
 
     return (        
-        <PopupWithForm title="Редактировать профиль" name="profile" buttonText={props.onRenderLoading ? "Сохранение..." : "Сохранить"} isOpened={props.isOpen} onClose={handleClosePopup} onSubmit={handleSubmit} buttonState={nameValidity && descriptionValidity}>
+        <PopupWithForm title="Редактировать профиль" name="profile" buttonText={props.onRenderLoading ? "Сохранение..." : "Сохранить"} isOpened={props.isOpen} onClose={props.onClose} onSubmit={handleSubmit} buttonState={nameValidity && descriptionValidity}>
           <input type="text" className={nameValidity ? "popup__input" : "popup__input popup__input_active"} id ="author-name-popup__input" name ="name" value={name} placeholder="Имя" required minLength="2" maxLength="40" onChange={handleNameChange}/>
           <span className="popup__input-error" id="author-name-popup__input-error">{nameError}</span>
           <input type="text" className={descriptionValidity ? "popup__input" : "popup__input popup__input_active"} id ="author-job-popup__input" name ="about" value={description} placeholder="Деятельность" required minLength="2" maxLength="200" onChange={handleDescriptionChange}/>

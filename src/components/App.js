@@ -2,15 +2,14 @@ import React from 'react';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
-import PopupWithForm from './PopupWithForm';
 import PopupWithImage from './PopupWithImage';
 import EditProfilePopup from './EditProfilePopup';
 import EditAvatarPopup from './EditAvatarPopup';
 import AddTilesPopup from './AddTilesPopup';
 import SurePopup from './SurePopup';
 import {api} from '../utils/Api.js';
-import {CurrentUserContext} from './contexts/CurrentUserContext';
-import sorryImage from '../images/ups2.png';
+import {CurrentUserContext} from '../contexts/CurrentUserContext';
+import sorryImage from '../images/ups2.png'; 
 
 function App() {
   const [currentUser, setCurrentUser] = React.useState({name: 'иван', about: '', avatar: '', _id: ''});
@@ -20,9 +19,9 @@ function App() {
   const [isAvatarPopupOpen, setAvatarPopupOpenState] = React.useState(false);
   const [isImagePopupOpen, setImagePopupOpenState] = React.useState(false);
   const [selectedCard, selectCard] = React.useState({name: '', link: ''});
-  const [deletedCard, deleteCard] = React.useState({_id: ''});
+  const [cardToDelete, setCardToDelete] = React.useState({_id: ''});
   const [isRenderLoading, setRenderLoading] = React.useState(false);
-  
+  const isOpen = (isAvatarPopupOpen || isProfilePopupOpen || isTilesPopupOpen || isImagePopupOpen || cardToDelete._id)
   const handleEditAvatarClick = () => {setAvatarPopupOpenState(true)};
 
   const handleEditProfileClick = () => {setProfilePopupOpenState(true)};
@@ -30,7 +29,7 @@ function App() {
   const handleAddTileClick = () => {setTilesPopupOpenState(true)}
 
   const handleDeleteCardClick = (card) => {
-    deleteCard(card)
+    setCardToDelete(card)
   };
   
   const handleCardClick = (card) => {    
@@ -71,9 +70,9 @@ function App() {
 
   const handleCardDelete = () => {
     setRenderLoading(true);
-    api.deleteCard(deletedCard._id)
+    api.deleteCard(cardToDelete._id)
       .then(() => {
-        addCards((state) => state.filter((c) => c._id != deletedCard._id));
+        addCards((state) => state.filter((c) => c._id != cardToDelete._id));
         closeAllPopups();
       })
       .catch(err => console.log(err))
@@ -101,7 +100,7 @@ function App() {
     setTilesPopupOpenState(false);
     setImagePopupOpenState(false);  
     setTimeout(clearImage, 500);
-    deleteCard({_id: ''});
+    setCardToDelete({_id: ''});
   }
   
   React.useEffect(() => {
@@ -114,28 +113,51 @@ function App() {
       .catch(err => console.log(err))       
   }, []);
 
+  React.useEffect(() => {
+    function closeByEscape(evt) {
+      if (evt.key === 'Escape') {
+        closeAllPopups();
+      }
+    }
+    function closeByOuterClick(evt) {
+      const popup = document.querySelector('.popup_opened')
+      const withinBoundaries = evt.composedPath().includes(popup.children[0]);     
+      if (!withinBoundaries) {
+        closeAllPopups();
+      }      
+    }
+
+    if(isOpen) {
+      document.addEventListener('keydown', closeByEscape);
+      document.addEventListener('mouseup', closeByOuterClick);
+      return () => {
+        document.removeEventListener('keydown', closeByEscape);
+        document.removeEventListener('mouseup', closeByOuterClick);
+      }
+    }
+    
+  }, [isOpen]) 
+
   return (
-    <div>
-      <CurrentUserContext.Provider value={currentUser}>
-        <Header />      
-        <Main 
-          onEditProfile={handleEditProfileClick} 
-          onAddTile={handleAddTileClick} 
-          onEditAvatar={handleEditAvatarClick} 
-          onCardClick={handleCardClick} 
-          cards={cards}
-          onCardLike={handleCardLike} 
-          onCardDelete={handleDeleteCardClick} 
-          sorryImage={sorryImage}
-        />
-        <Footer />
-        <EditProfilePopup isOpen={isProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} onRenderLoading={isRenderLoading}/>
-        <AddTilesPopup isOpen={isTilesPopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} onRenderLoading={isRenderLoading}/>        
-        <EditAvatarPopup isOpen={isAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} onRenderLoading={isRenderLoading}/>        
-        <SurePopup card={deletedCard} onClose={closeAllPopups} onDeleteCard={handleCardDelete} onRenderLoading={isRenderLoading}/>
-        <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups}/>       
-      </CurrentUserContext.Provider>
-    </div>
+    <CurrentUserContext.Provider value={currentUser}>
+      <Header />      
+      <Main 
+        onEditProfile={handleEditProfileClick} 
+        onAddTile={handleAddTileClick} 
+        onEditAvatar={handleEditAvatarClick} 
+        onCardClick={handleCardClick} 
+        cards={cards}
+        onCardLike={handleCardLike} 
+        onCardDelete={handleDeleteCardClick} 
+        sorryImage={sorryImage}
+      />
+      <Footer />
+      <EditProfilePopup isOpen={isProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} onRenderLoading={isRenderLoading}/>
+      <AddTilesPopup isOpen={isTilesPopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} onRenderLoading={isRenderLoading}/>        
+      <EditAvatarPopup isOpen={isAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} onRenderLoading={isRenderLoading}/>        
+      <SurePopup card={cardToDelete} onClose={closeAllPopups} onDeleteCard={handleCardDelete} onRenderLoading={isRenderLoading}/>
+      <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups}/>       
+    </CurrentUserContext.Provider>
   );
 }
 
