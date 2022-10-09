@@ -1,0 +1,5 @@
+.header__info {
+    justify-content: space-between;
+    display: flex;
+    height: 22px;
+}

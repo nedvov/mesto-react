@@ -1,47 +1,47 @@
 import React from 'react';
 import {CurrentUserContext} from '../contexts/CurrentUserContext';
 
-function Card(props) {
+function Card({card, sorryImage, onCardClick, onCardLike, onCardDelete}) {
     const currentUser = React.useContext(CurrentUserContext);
     const [imageErrorState, setImageErrorState] = React.useState(false);
-    const isOwn = props.card.owner._id === currentUser._id;
-    const isLiked = props.card.likes.some(i => i._id === currentUser._id);
+    const isOwn = card.owner._id === currentUser._id;
+    const isLiked = card.likes.some(i => i._id === currentUser._id);
 
     function handleClick() {
         if (imageErrorState) {
-            const cardWithError = Object.assign({},props.card);
-            cardWithError.link = props.sorryImage;
-            props.onCardClick(cardWithError)
+            const cardWithError = Object.assign({},card);
+            cardWithError.link = sorryImage;
+            onCardClick(cardWithError)
         }
-        else {props.onCardClick(props.card)}
+        else {onCardClick(card)}
     }
 
     function handleLikeClick() {
-        props.onCardLike(props.card)
+        onCardLike(card)
     }
 
     function handleDeleteClick() {
-        props.onCardDelete(props.card)
+        onCardDelete(card)
     }
 
     return (        
-        <div className="tiles__item" id={props.card._id}>
+        <div className="tiles__item" id={card._id}>
             <img 
                 className="tiles__image"
-                src={props.card.link}
-                alt={props.card.name}
+                src={card.link}
+                alt={card.name}
                 onError={({ currentTarget }) => {
                     currentTarget.onerror = null;
-                    currentTarget.src=props.sorryImage;
+                    currentTarget.src=sorryImage;
                     setImageErrorState(true)       
                 }}
                 onClick={handleClick}                      
             />
             <div className="tiles__place">
-                 <h2 className="tiles__title">{props.card.name}</h2>
+                 <h2 className="tiles__title">{card.name}</h2>
                 <div className="tiles__likes">
                     <button className={isLiked ? 'tiles__like tiles__like_active' : 'tiles__like'} onClick={handleLikeClick} type="button"></button>
-                    <p className="tiles__like-count">{props.card.likes.length}</p>
+                    <p className="tiles__like-count">{card.likes.length}</p>
                 </div>  
             </div>
             {isOwn && <button className="tiles__delete-button" onClick={handleDeleteClick} type="button"></button>}

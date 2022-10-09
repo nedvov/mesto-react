@@ -1,13 +1,13 @@
-function PopupWithForm(props) {
+function PopupWithForm({isOpened, name, title, onClose, onSubmit, children, buttonText, buttonState}) {
     return (      
-        <div className={props.isOpened ? 'popup popup_opened' : 'popup'} id={`${props.name}-popup`}>
+        <div className={isOpened ? 'popup popup_opened' : 'popup'} id={`${name}-popup`}>
             <div className="popup__container">
-                <button type="reset" className="popup__close-button" id={`${props.name}-popup__close-button`}  onClick={props.onClose}></button>
-                <h2 className="popup__title">{props.title}</h2>
-                <form className = "popup__form" id={`${props.name}-popup__form`} name={`${props.name}-edit-form`} onSubmit={props.onSubmit}>
+                <button type="reset" className="popup__close-button" id={`${name}-popup__close-button`}  onClick={onClose}></button>
+                <h2 className="popup__title">{title}</h2>
+                <form className = "popup__form" id={`${name}-popup__form`} name={`${name}-edit-form`} onSubmit={onSubmit}>
                     <fieldset className="popup__inputs">
-                        {props.children}
-                        <input type="submit" className="popup__save-button" id={`${props.name}-popup__save-button`} value={props.buttonText} disabled={!props.buttonState}/>
+                        {children}
+                        <input type="submit" className="popup__save-button" id={`${name}-popup__save-button`} value={buttonText} disabled={!buttonState}/>
                     </fieldset>                
                 </form>
             </div>

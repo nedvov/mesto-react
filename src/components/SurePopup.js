@@ -1,15 +1,15 @@
 import PopupWithForm from './PopupWithForm';
 import React from 'react';
 
-function SurePopup(props) {
+function SurePopup({onRenderLoading, card, onClose, onDeleteCard}) {
 
     function handleSubmit(e) {
         e.preventDefault();
-        props.onDeleteCard();
+        onDeleteCard();
     }
 
     return (     
-        <PopupWithForm title="Вы уверены?" name="sure" buttonText={props.onRenderLoading ? "Сохранение..." : "Да"} isOpened={props.card._id ? true : false} onClose={props.onClose} onSubmit={handleSubmit} buttonState={true}/>
+        <PopupWithForm title="Вы уверены?" name="sure" buttonText={onRenderLoading ? "Сохранение..." : "Да"} isOpened={card._id ? true : false} onClose={onClose} onSubmit={handleSubmit} buttonState={true}/>
     );
 }
   

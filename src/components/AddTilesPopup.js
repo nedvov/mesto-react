@@ -1,46 +1,24 @@
 import PopupWithForm from './PopupWithForm';
 import React from 'react';
-
-function AddTilesPopup(props) {
-    const [name, setName] = React.useState('');
-    const [link, setLink] = React.useState('');
-    const [nameValidity, setNameValidity] = React.useState(true);
-    const [linkValidity, setLinkValidity] = React.useState(true);
-    const [nameError, setNameError] = React.useState('');
-    const [linkError, setLinkError] = React.useState('');
-
-    function handleNameChange(e) {
-        setName(e.target.value);
-        setNameValidity(e.target.validity.valid);
-        setNameError(e.target.validationMessage);
-    }
-
-    function handleLinkChange(e) {
-        setLink(e.target.value);
-        setLinkValidity(e.target.validity.valid);
-        setLinkError(e.target.validationMessage);
-    }
+import {useFormAndValidation} from '../hooks/useFormAndValidation'
+function AddTilesPopup({onAddPlace, isOpen, onRenderLoading, onClose}) {
+    const {values, handleChange, errors, isValid, resetForm} = useFormAndValidation();
 
     function handleSubmit(e) {
         e.preventDefault();
-        props.onAddPlace(name, link);
+        onAddPlace(values.name, values.link);
     }
 
     React.useEffect(() => {
-        setNameValidity(true);
-        setLinkValidity(true);
-        setName('');
-        setLink('');
-        setNameError('');
-        setLinkError('');
-      }, [props.isOpen]);
+        resetForm({name: '', link: ''}, {name: '', link: ''}, {name: true, link: true});
+      }, [isOpen]);
 
     return (        
-        <PopupWithForm title="Новое место" name="tiles" buttonText={props.onRenderLoading ? "Сохранение..." : "Сохранить"} isOpened={props.isOpen} onClose={props.onClose} onSubmit={handleSubmit} buttonState={nameValidity && linkValidity && name && link}>
-            <input type="text" className={nameValidity ? "popup__input" : "popup__input popup__input_active"} id ="place-name-popup__input" name ="name" value={name} placeholder="Название" required minLength="2" maxLength="30" onChange={handleNameChange}/>
-            <span className="popup__input-error" id="place-name-popup__input-error">{nameError}</span>
-            <input type="url" className={linkValidity ? "popup__input" : "popup__input popup__input_active"} id ="place-link-popup__input" name ="link" value={link} placeholder="Ссылка на картинку" required onChange={handleLinkChange}/>
-            <span className="popup__input-error" id="place-link-popup__input-error">{linkError}</span>       
+        <PopupWithForm title="Новое место" name="tiles" buttonText={onRenderLoading ? "Сохранение..." : "Сохранить"} isOpened={isOpen} onClose={onClose} onSubmit={handleSubmit} buttonState={isValid.name && isValid.link && values.name && values.link}>
+            <input type="text" className={(isValid.name) ? "popup__input" : "popup__input popup__input_active"} id ="place-name-popup__input" name ="name" value={values.name  ? values.name : ''} placeholder="Название" required minLength="2" maxLength="30" onChange={handleChange}/>
+            <span className="popup__input-error" id="place-name-popup__input-error">{errors.name}</span>
+            <input type="url" className={(isValid.link) ? "popup__input" : "popup__input popup__input_active"} id ="place-link-popup__input" name ="link" value={values.link  ? values.link : ''} placeholder="Ссылка на картинку" required onChange={handleChange}/>
+            <span className="popup__input-error" id="place-link-popup__input-error">{errors.link}</span>       
         </PopupWithForm>
     );
   }

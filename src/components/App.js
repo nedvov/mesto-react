@@ -1,4 +1,5 @@
 import React from 'react';
+import { Route, Switch, Link, Redirect } from 'react-router-dom';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
@@ -7,6 +8,8 @@ import EditProfilePopup from './EditProfilePopup';
 import EditAvatarPopup from './EditAvatarPopup';
 import AddTilesPopup from './AddTilesPopup';
 import SurePopup from './SurePopup';
+import Sign from './Sign';
+import Register from './Register';
 import {api} from '../utils/Api.js';
 import {CurrentUserContext} from '../contexts/CurrentUserContext';
 import sorryImage from '../images/ups2.png'; 
@@ -21,7 +24,7 @@ function App() {
   const [selectedCard, selectCard] = React.useState({name: '', link: ''});
   const [cardToDelete, setCardToDelete] = React.useState({_id: ''});
   const [isRenderLoading, setRenderLoading] = React.useState(false);
-  const isOpen = (isAvatarPopupOpen || isProfilePopupOpen || isTilesPopupOpen || isImagePopupOpen || cardToDelete._id)
+  const isOpen = (isAvatarPopupOpen || isProfilePopupOpen || isTilesPopupOpen || isImagePopupOpen || cardToDelete._id);
   const handleEditAvatarClick = () => {setAvatarPopupOpenState(true)};
 
   const handleEditProfileClick = () => {setProfilePopupOpenState(true)};
@@ -102,6 +105,10 @@ function App() {
     setTimeout(clearImage, 500);
     setCardToDelete({_id: ''});
   }
+
+  const handleClick1 = () => {
+    alert('Выход')
+  }
   
   React.useEffect(() => {
     Promise.all([api.getUserInfo(), api.getInitialCards()])
@@ -119,6 +126,7 @@ function App() {
         closeAllPopups();
       }
     }
+    
     function closeByOuterClick(evt) {
       const popup = document.querySelector('.popup_opened')
       const withinBoundaries = evt.composedPath().includes(popup.children[0]);     
@@ -139,24 +147,48 @@ function App() {
   }, [isOpen]) 
 
   return (
-    <CurrentUserContext.Provider value={currentUser}>
-      <Header />      
-      <Main 
-        onEditProfile={handleEditProfileClick} 
-        onAddTile={handleAddTileClick} 
-        onEditAvatar={handleEditAvatarClick} 
-        onCardClick={handleCardClick} 
-        cards={cards}
-        onCardLike={handleCardLike} 
-        onCardDelete={handleDeleteCardClick} 
-        sorryImage={sorryImage}
-      />
-      <Footer />
-      <EditProfilePopup isOpen={isProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} onRenderLoading={isRenderLoading}/>
-      <AddTilesPopup isOpen={isTilesPopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} onRenderLoading={isRenderLoading}/>        
-      <EditAvatarPopup isOpen={isAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} onRenderLoading={isRenderLoading}/>        
-      <SurePopup card={cardToDelete} onClose={closeAllPopups} onDeleteCard={handleCardDelete} onRenderLoading={isRenderLoading}/>
-      <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups}/>       
+    <CurrentUserContext.Provider value={currentUser}>           
+      <Switch>
+        <Route exact path="/">
+          {1===2 && <Redirect to="/sign-in" />}
+          <Header isLogged={true}>
+            <button type="button" className="header__button" onClick={handleClick1}>Выйти</button>
+          </Header>
+          <Main 
+            onEditProfile={handleEditProfileClick} 
+            onAddTile={handleAddTileClick} 
+            onEditAvatar={handleEditAvatarClick} 
+            onCardClick={handleCardClick} 
+            cards={cards}
+            onCardLike={handleCardLike} 
+            onCardDelete={handleDeleteCardClick} 
+            sorryImage={sorryImage}
+          />
+          <EditProfilePopup isOpen={isProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} onRenderLoading={isRenderLoading}/>
+          <AddTilesPopup isOpen={isTilesPopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} onRenderLoading={isRenderLoading}/>        
+          <EditAvatarPopup isOpen={isAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} onRenderLoading={isRenderLoading}/>        
+          <SurePopup card={cardToDelete} onClose={closeAllPopups} onDeleteCard={handleCardDelete} onRenderLoading={isRenderLoading}/>
+          <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups}/>
+        </Route>
+        <Route path="/sign-in">
+          <Header isLogged={false}>
+            <Link to="/sign-up" className="header__button">Регистрация</Link>
+          </Header>
+          <Sign name="in" title="Вход" onSubmit={handleClick1} buttonText="Войти" />          
+        </Route>
+        <Route path="/sign-up">
+          <Header isLogged={false}>
+            <Link to="/sign-in" className="header__button">Войти</Link>
+          </Header>
+          <Sign name="up" title="Регистрация" onSubmit={handleClick1} buttonText="Зарегистрироваться">
+            <Link to="/sign-in" className="sign__link">Уже зарегистрированы? Войти</Link>
+          </Sign>  
+        </Route>        
+        <Route path="*">
+          {1===2 ? <Redirect to="/" />: <Redirect to="/sign-in" />}          
+        </Route>               
+      </Switch>
+      <Footer />        
     </CurrentUserContext.Provider>
   );
 }
