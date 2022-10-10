@@ -8,8 +8,10 @@
     line-height: 22px;
     color: #FFFFFF;
     text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 600px;
+}
+
+@media screen and (max-width:767px) {
+    .header__email {
+        margin: 0 0 18px;
+    }
 }

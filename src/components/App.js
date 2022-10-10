@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Link, Redirect } from 'react-router-dom';
+import { Route, Switch, Link, Redirect, useHistory } from 'react-router-dom';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
@@ -9,13 +9,16 @@ import EditAvatarPopup from './EditAvatarPopup';
 import AddTilesPopup from './AddTilesPopup';
 import SurePopup from './SurePopup';
 import Sign from './Sign';
-import Register from './Register';
-import {api} from '../utils/Api.js';
+import ProtectedRoute from './ProtectedRoute';
+import { api, sign_api} from '../utils/Api.js';
 import {CurrentUserContext} from '../contexts/CurrentUserContext';
-import sorryImage from '../images/ups2.png'; 
+import sorryImage from '../images/ups2.png';
+import successImage from '../images/success.png';
+import errorImage from '../images/error.png'; 
 
 function App() {
-  const [currentUser, setCurrentUser] = React.useState({name: 'иван', about: '', avatar: '', _id: ''});
+  const [currentUser, setCurrentUser] = React.useState({name: '', about: '', avatar: '', _id: ''});
+  const [currentUserEmail, setCurrentUserEmail] = React.useState('');
   const [cards, addCards] = React.useState([]);
   const [isProfilePopupOpen, setProfilePopupOpenState] = React.useState(false);
   const [isTilesPopupOpen, setTilesPopupOpenState] = React.useState(false);
@@ -24,7 +27,10 @@ function App() {
   const [selectedCard, selectCard] = React.useState({name: '', link: ''});
   const [cardToDelete, setCardToDelete] = React.useState({_id: ''});
   const [isRenderLoading, setRenderLoading] = React.useState(false);
+  const [isLoggedIn, setLoggedIn] = React.useState(false);
   const isOpen = (isAvatarPopupOpen || isProfilePopupOpen || isTilesPopupOpen || isImagePopupOpen || cardToDelete._id);
+  const history = useHistory();
+
   const handleEditAvatarClick = () => {setAvatarPopupOpenState(true)};
 
   const handleEditProfileClick = () => {setProfilePopupOpenState(true)};
@@ -106,11 +112,61 @@ function App() {
     setCardToDelete({_id: ''});
   }
 
-  const handleClick1 = () => {
-    alert('Выход')
+  const handleSignOut = () => {
+    setLoggedIn(false);
+    setCurrentUserEmail('');
+    localStorage.removeItem('token');
+    history.push('sign-in');
+  }
+
+  const handleSignUp =(password, email) => {
+    setRenderLoading(true);
+    sign_api.signUp(password, email)
+    .then(() => {
+      setImagePopupOpenState(true);
+      selectCard({name: '', link: successImage})
+    })
+    .catch(err => {
+      console.log(err)
+      setImagePopupOpenState(true);
+      selectCard({name: '', link: errorImage})
+    })
+    .finally(() => setRenderLoading(false))
+  }
+
+  const handleSignIn =(password, email) => {    
+    setRenderLoading(true);
+    sign_api.signIn(password, email)
+    .then(data => {
+      localStorage.setItem('token', data.token);
+      setLoggedIn(true);
+      setCurrentUserEmail(email);
+      history.push("/");         
+    })
+    .catch(err => {
+      console.log(err)
+      setImagePopupOpenState(true);
+      selectCard({name: '', link: errorImage})
+    })
+    .finally(() => setRenderLoading(false))
+  }
+
+  const handleSignCheck = () => {    
+    sign_api.signCheck()
+    .then(data => {
+      setCurrentUserEmail(data.data.email);
+      setLoggedIn(true);
+      history.push("/");   
+    })
+    .catch(err => {
+      console.log(err)
+      setLoggedIn(false);
+      history.push("/sign-in");
+    })
   }
   
   React.useEffect(() => {
+    localStorage.getItem('token') && handleSignCheck();    
     Promise.all([api.getUserInfo(), api.getInitialCards()])
       .then(values => {
         const [initialUser, initialCards] = values;
@@ -149,11 +205,8 @@ function App() {
   return (
     <CurrentUserContext.Provider value={currentUser}>           
       <Switch>
-        <Route exact path="/">
-          {1===2 && <Redirect to="/sign-in" />}
-          <Header isLogged={true}>
-            <button type="button" className="header__button" onClick={handleClick1}>Выйти</button>
-          </Header>
+        <ProtectedRoute exact path="/" loggedIn={isLoggedIn}>
+          <Header loggedIn={isLoggedIn} onButtonClick={handleSignOut} buttonText="Выйти" email={currentUserEmail}/>
           <Main 
             onEditProfile={handleEditProfileClick} 
             onAddTile={handleAddTileClick} 
@@ -169,23 +222,21 @@ function App() {
           <EditAvatarPopup isOpen={isAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} onRenderLoading={isRenderLoading}/>        
           <SurePopup card={cardToDelete} onClose={closeAllPopups} onDeleteCard={handleCardDelete} onRenderLoading={isRenderLoading}/>
           <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups}/>
-        </Route>
+        </ProtectedRoute>
         <Route path="/sign-in">
-          <Header isLogged={false}>
-            <Link to="/sign-up" className="header__button">Регистрация</Link>
-          </Header>
-          <Sign name="in" title="Вход" onSubmit={handleClick1} buttonText="Войти" />          
+          <Header loggedIn={isLoggedIn} linkTo="/sign-up" linkText={"Регистрация"} />                   
+          <Sign name="in" title="Вход" onSubmit={handleSignIn} buttonText={isRenderLoading ? "Вход..." :"Войти"}  />
+          <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups} isSystem={true}/>          
         </Route>
         <Route path="/sign-up">
-          <Header isLogged={false}>
-            <Link to="/sign-in" className="header__button">Войти</Link>
-          </Header>
-          <Sign name="up" title="Регистрация" onSubmit={handleClick1} buttonText="Зарегистрироваться">
+          <Header loggedIn={isLoggedIn} linkTo="/sign-in" linkText={"Войти"} />
+          <Sign name="up" title="Регистрация" onSubmit={handleSignUp} buttonText={isRenderLoading ? "Регистрация..." :"Зарегистрироваться"} onRenderLoading={isRenderLoading}>
             <Link to="/sign-in" className="sign__link">Уже зарегистрированы? Войти</Link>
-          </Sign>  
+          </Sign>
+          <PopupWithImage isOpen={isImagePopupOpen} card={selectedCard} onClose={closeAllPopups} isSystem={true}/>  
         </Route>        
         <Route path="*">
-          {1===2 ? <Redirect to="/" />: <Redirect to="/sign-in" />}          
+          {isLoggedIn ? <Redirect to="/" />: <Redirect to="/sign-in" />}          
         </Route>               
       </Switch>
       <Footer />        

@@ -79,6 +79,39 @@ class Api {
             })          
         })
     }
+
+    signIn(password, email) {
+        return this._request(`${this._baseUrl}/signin`, {
+            method: 'POST',
+            headers: this._headers,
+            body: JSON.stringify({
+                'password': password,
+                'email': email
+            })          
+        })
+    }
+
+    signUp(password, email) {
+        return this._request(`${this._baseUrl}/signup`, {
+            method: 'POST',
+            headers: this._headers,
+            body: JSON.stringify({
+                'password': password,
+                'email': email
+            })          
+        })
+    }
+
+    signCheck() {
+        return this._request(`${this._baseUrl}/users/me`, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                authorization: `Bearer ${localStorage.getItem('token')}`
+            }                    
+        })
+    }
+
 }
 
 export const api = new Api({
@@ -87,4 +120,11 @@ export const api = new Api({
       authorization: 'bd312182-f682-4611-bb11-842bf508484e',
       'Content-Type': 'application/json'
     }
-  });
+});
+    
+export const sign_api = new Api({
+    baseUrl: 'https://auth.nomoreparties.co',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
